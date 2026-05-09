@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmation - GUSTAVO Online Shopping</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-cart"></i> GUSTAVO Online Shopping
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item" id="dashboardNavItem" style="display: none;">
+                        <a class="nav-link" href="dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown" id="userDropdown" style="display: none;">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdownLink" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <span id="usernameDisplay">User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="dashboard.html">My Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        <div id="flashMessages"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <h2><i class="fas fa-credit-card"></i> Payment Confirmation</h2>
+                
+                <!-- Order Summary -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6><i class="fas fa-receipt"></i> Order Summary</h6>
+                    </div>
+                    <div class="card-body" id="orderSummary">
+                        <!-- Order summary will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Payment Form -->
+                <form id="paymentForm" onsubmit="handlePaymentConfirmation(event)">
+                    <!-- Payment Method Selection -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6><i class="fas fa-credit-card"></i> Payment Method</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="payment-option" onclick="selectPaymentMethod('mpesa')">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="mpesa" value="mpesa" required>
+                                    <label class="form-check-label" for="mpesa">
+                                        <strong>M-Pesa</strong>
+                                        <p class="text-muted small mb-0">Pay via M-Pesa mobile money</p>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-option" onclick="selectPaymentMethod('bank')">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="bank" value="bank">
+                                    <label class="form-check-label" for="bank">
+                                        <strong>Bank Transfer</strong>
+                                        <p class="text-muted small mb-0">Direct bank deposit/transfer</p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- M-Pesa Payment Details -->
+                    <div class="card mb-4" id="mpesaDetails" style="display: none;">
+                        <div class="card-header">
+                            <h6><i class="fas fa-mobile-alt"></i> M-Pesa Payment Details</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <h6>M-Pesa Payment Instructions:</h6>
+                                <ol class="mb-0">
+                                    <li>Go to M-Pesa menu on your phone</li>
+                                    <li>Select "Lipa na M-Pesa"</li>
+                                    <li>Select "Pay Bill"</li>
+                                    <li>Enter Business Number: <strong>123456</strong></li>
+                                    <li>Enter Account Number: <strong id="mpesaAccountNumber">ORDER_ID</strong></li>
+                                    <li>Enter the amount and confirm</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="mpesaPhone" class="form-label">M-Pesa Phone Number</label>
+                                    <input type="tel" class="form-control" id="mpesaPhone" placeholder="+256783632089" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="mpesaTransactionId" class="form-label">Transaction ID</label>
+                                    <input type="text" class="form-control" id="mpesaTransactionId" placeholder="XYZ123ABC" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Transfer Details -->
+                    <div class="card mb-4" id="bankDetails" style="display: none;">
+                        <div class="card-header">
+                            <h6><i class="fas fa-university"></i> Bank Transfer Details</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info">
+                                <h6>Bank Transfer Instructions:</h6>
+                                <p class="mb-2"><strong>Bank:</strong> Kenya Commercial Bank (KCB)</p>
+                                <p class="mb-2"><strong>Account Name:</strong> ShopHub Kenya Ltd</p>
+                                <p class="mb-2"><strong>Account Number:</strong> 1234567890</p>
+                                <p class="mb-0"><strong>Branch:</strong> Nairobi Branch</p>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="bankAccountName" class="form-label">Account Holder Name</label>
+                                    <input type="text" class="form-control" id="bankAccountName" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="bankTransactionId" class="form-label">Transaction/Reference Number</label>
+                                    <input type="text" class="form-control" id="bankTransactionId" placeholder="BANK123XYZ" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Proof Upload -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6><i class="fas fa-file-upload"></i> Upload Payment Proof</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-area" id="uploadArea">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <h5>Upload Payment Proof</h5>
+                                <p class="text-muted">Upload screenshot or photo of your payment confirmation</p>
+                                <input type="file" id="paymentProof" class="d-none" accept="image/*,.pdf" onchange="handleFileSelect(event)">
+                                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('paymentProof').click()">
+                                    <i class="fas fa-upload"></i> Choose File
+                                </button>
+                            </div>
+                            <div id="fileInfo" class="mt-3" style="display: none;">
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle"></i> <span id="fileName"></span>
+                                    <button type="button" class="btn btn-sm btn-link text-danger float-end" onclick="removeFile()">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6><i class="fas fa-sticky-note"></i> Additional Notes (Optional)</h6>
+                        </div>
+                        <div class="card-body">
+                            <textarea class="form-control" id="paymentNotes" rows="3" placeholder="Any additional information about your payment..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitPaymentBtn">
+                            <i class="fas fa-paper-plane"></i> Submit Payment Confirmation
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-md-4">
+                <!-- Important Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6><i class="fas fa-info-circle"></i> Important Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="small">
+                            <li>Payment verification takes 1-2 business hours</li>
+                            <li>You will receive email confirmation once payment is verified</li>
+                            <li>Keep your payment proof for future reference</li>
+                            <li>For payment issues, contact support immediately</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Contact Support -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6><i class="fas fa-headset"></i> Payment Support</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="small">
+                            <strong>For payment assistance:</strong><br>
+                            <i class="fas fa-phone"></i> +256783632089<br>
+                            <i class="fas fa-envelope"></i> musagustave64@gmail.com<br>
+                            <i class="fas fa-clock"></i> Mon-Fri 9AM-6PM<br>
+                            <i class="fas fa-clock"></i> Sat 10AM-2PM
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Security Notice -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6><i class="fas fa-shield-alt"></i> Security Notice</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted">
+                            <i class="fas fa-lock text-success"></i> Your payment information is secure<br>
+                            <i class="fas fa-user-shield text-info"></i> We never share your financial details<br>
+                            <i class="fas fa-certificate text-warning"></i> All transactions are encrypted
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container text-center">
+            <p>&copy; 2024 GUSTAVO Online Shopping. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/messages.js"></script>
+    <script>
+        let currentOrder = null;
+        let selectedFile = null;
+
+        // Select payment method
+        function selectPaymentMethod(method) {
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            const selectedOption = document.querySelector(`input[value="${method}"]`).closest('.payment-option');
+            selectedOption.classList.add('selected');
+            document.getElementById(method).checked = true;
+            
+            // Show/hide payment details
+            document.getElementById('mpesaDetails').style.display = method === 'mpesa' ? 'block' : 'none';
+            document.getElementById('bankDetails').style.display = method === 'bank' ? 'block' : 'none';
+        }
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Check file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    window.auth.flashMessage('File size must be less than 5MB', 'error');
+                    event.target.value = '';
+                    return;
+                }
+                
+                // Check file type
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+                if (!allowedTypes.includes(file.type)) {
+                    window.auth.flashMessage('Only images (JPG, PNG, GIF) and PDF files are allowed', 'error');
+                    event.target.value = '';
+                    return;
+                }
+                
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileInfo').style.display = 'block';
+                document.getElementById('uploadArea').style.display = 'none';
+            }
+        }
+
+        // Remove selected file
+        function removeFile() {
+            selectedFile = null;
+            document.getElementById('paymentProof').value = '';
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+        }
+
+        // Load order details
+        function loadOrderDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+            
+            if (!orderId) {
+                // Try to get from localStorage
+                const savedOrder = localStorage.getItem('currentOrder');
+                if (savedOrder) {
+                    currentOrder = JSON.parse(savedOrder);
+                    displayOrderSummary(currentOrder);
+                } else {
+                    window.auth.flashMessage('Order not found', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                }
+            } else {
+                // Get order from orders storage
+                const orders = JSON.parse(localStorage.getItem('orders')) || [];
+                const order = orders.find(o => o.id === orderId);
+                
+                if (order) {
+                    currentOrder = order;
+                    displayOrderSummary(order);
+                } else {
+                    window.auth.flashMessage('Order not found', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                }
+            }
+        }
+
+        // Display order summary
+        function displayOrderSummary(order) {
+            const orderSummaryContainer = document.getElementById('orderSummary');
+            
+            // Update M-Pesa account number
+            document.getElementById('mpesaAccountNumber').textContent = order.id;
+            
+            let summaryHtml = `
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-1">Order ID: ${order.id}</h6>
+                        <small class="text-muted">Order Date: ${new Date(order.createdAt).toLocaleDateString()}</small>
+                    </div>
+                    <span class="badge bg-warning">Payment Pending</span>
+                </div>
+                <hr>
+            `;
+            
+            order.items.forEach(item => {
+                summaryHtml += `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <h6 class="mb-1">${item.product.name}</h6>
+                            <small class="text-muted">Qty: ${item.quantity}</small>
+                        </div>
+                        <strong>${window.products.formatPrice(item.totalPrice)}</strong>
+                    </div>
+                `;
+            });
+            
+            summaryHtml += `
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <strong>Total Amount:</strong>
+                    <strong class="text-primary">${window.products.formatPrice(order.total)}</strong>
+                </div>
+            `;
+            
+            orderSummaryContainer.innerHTML = summaryHtml;
+        }
+
+        // Handle payment confirmation submission
+        function handlePaymentConfirmation(event) {
+            event.preventDefault();
+            
+            if (!currentOrder) {
+                window.auth.flashMessage('Order not found', 'error');
+                return;
+            }
+            
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+            if (!paymentMethod) {
+                window.auth.flashMessage('Please select a payment method', 'error');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitPaymentBtn');
+            submitBtn.innerHTML = '<span class="loading-spinner"></span> Submitting...';
+            submitBtn.disabled = true;
+            
+            // Prepare payment confirmation data
+            const paymentData = {
+                orderId: currentOrder.id,
+                paymentMethod: paymentMethod.value,
+                paymentNotes: document.getElementById('paymentNotes').value,
+                submittedAt: new Date().toISOString()
+            };
+            
+            // Add payment method specific details
+            if (paymentMethod.value === 'mpesa') {
+                paymentData.phoneNumber = document.getElementById('mpesaPhone').value;
+                paymentData.transactionId = document.getElementById('mpesaTransactionId').value;
+            } else if (paymentMethod.value === 'bank') {
+                paymentData.accountName = document.getElementById('bankAccountName').value;
+                paymentData.transactionId = document.getElementById('bankTransactionId').value;
+            }
+            
+            // Simulate payment confirmation processing
+            setTimeout(() => {
+                // Save payment confirmation
+                const paymentConfirmations = JSON.parse(localStorage.getItem('paymentConfirmations')) || [];
+                paymentConfirmations.push({
+                    ...paymentData,
+                    status: 'Pending',
+                    verificationStatus: 'Pending'
+                });
+                localStorage.setItem('paymentConfirmations', JSON.stringify(paymentConfirmations));
+                
+                // Update order status
+                const orders = JSON.parse(localStorage.getItem('orders')) || [];
+                const orderIndex = orders.findIndex(o => o.id === currentOrder.id);
+                if (orderIndex > -1) {
+                    orders[orderIndex].paymentStatus = 'Submitted';
+                    orders[orderIndex].status = 'Payment Submitted';
+                    localStorage.setItem('orders', JSON.stringify(orders));
+                }
+                
+                // Clear current order from localStorage
+                localStorage.removeItem('currentOrder');
+                
+                window.auth.flashMessage('Payment confirmation submitted successfully! We will verify your payment shortly.', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = `order-confirmation.html?orderId=${currentOrder.id}`;
+                }, 2000);
+            }, 2000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            if (!window.auth.requireAuth()) {
+                return;
+            }
+            
+            // Update UI
+            window.auth.updateAuthUI();
+            
+            // Load order details
+            loadOrderDetails();
+        });
+    </script>
+</body>
+</html>

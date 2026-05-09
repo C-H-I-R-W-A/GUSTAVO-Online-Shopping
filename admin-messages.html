@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - GUSTAVO Online Shopping Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-shopping-cart"></i> GUSTAVO Online Shopping
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                            Admin
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="admin-payment-verification.html">Payment Verification</a></li>
+                            <li><a class="dropdown-item" href="admin-orders.html">Orders</a></li>
+                            <li><a class="dropdown-item active" href="admin-messages.html">Messages</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="admin-messages.html">
+                            <i class="fas fa-envelope"></i>
+                            <span class="notification-badge" id="messageCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdownLink" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <span id="usernameDisplay">Admin</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="dashboard.html">My Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        <div id="flashMessages"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-envelope"></i> Customer Messages</h2>
+            <div>
+                <button class="btn btn-outline-secondary" onclick="refreshMessages()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <ul class="nav nav-tabs mb-4" id="messageTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="unread-tab" data-bs-toggle="tab" data-bs-target="#unread" type="button" role="tab">
+                    Unread <span class="badge bg-danger" id="unreadCount">0</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="read-tab" data-bs-toggle="tab" data-bs-target="#read" type="button" role="tab">
+                    Read <span class="badge bg-secondary" id="readCount">0</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="replied-tab" data-bs-toggle="tab" data-bs-target="#replied" type="button" role="tab">
+                    Replied <span class="badge bg-success" id="repliedCount">0</span>
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="messageTabContent">
+            <!-- Unread Messages -->
+            <div class="tab-pane fade show active" id="unread" role="tabpanel">
+                <div id="unreadMessages">
+                    <!-- Unread messages will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Read Messages -->
+            <div class="tab-pane fade" id="read" role="tabpanel">
+                <div id="readMessages">
+                    <!-- Read messages will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Replied Messages -->
+            <div class="tab-pane fade" id="replied" role="tabpanel">
+                <div id="repliedMessages">
+                    <!-- Replied messages will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Message Detail Modal -->
+    <div class="modal fade" id="messageModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Message Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="messageModalBody">
+                    <!-- Message details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="replyBtn" onclick="showReplyForm()">
+                        <i class="fas fa-reply"></i> Reply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reply Modal -->
+    <div class="modal fade" id="replyModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reply to Message</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="replyForm">
+                        <div class="mb-3">
+                            <label for="replySubject" class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="replySubject" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="replyContent" class="form-label">Reply</label>
+                            <textarea class="form-control" id="replyContent" rows="6" required placeholder="Type your reply here..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="sendReply()">
+                        <i class="fas fa-paper-plane"></i> Send Reply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container text-center">
+            <p>&copy; 2024 GUSTAVO Online Shopping. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/messages.js"></script>
+    <script>
+        let currentMessage = null;
+
+        // Load all messages
+        function loadMessages() {
+            const allMessages = window.messageSystem.getAdminMessages();
+            
+            // Filter messages by status
+            const unreadMessages = allMessages.filter(msg => msg.status === 'unread');
+            const readMessages = allMessages.filter(msg => msg.status === 'read');
+            const repliedMessages = allMessages.filter(msg => msg.status === 'replied');
+            
+            // Update counts
+            document.getElementById('unreadCount').textContent = unreadMessages.length;
+            document.getElementById('readCount').textContent = readMessages.length;
+            document.getElementById('repliedCount').textContent = repliedMessages.length;
+            document.getElementById('messageCount').textContent = unreadMessages.length;
+            
+            // Load messages into tabs
+            loadMessageList('unreadMessages', unreadMessages);
+            loadMessageList('readMessages', readMessages);
+            loadMessageList('repliedMessages', repliedMessages);
+        }
+
+        // Load message list into container
+        function loadMessageList(containerId, messages) {
+            const container = document.getElementById(containerId);
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5>No messages</h5>
+                        <p class="text-muted">No messages found in this category</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let messagesHtml = '';
+            messages.forEach(message => {
+                const priorityClass = getPriorityClass(message.subject);
+                const statusBadge = getStatusBadge(message.status);
+                
+                messagesHtml += `
+                    <div class="card mb-3 message-card" onclick="viewMessage('${message.id}')" style="cursor: pointer;">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="mb-1">${message.subject}</h6>
+                                    <p class="mb-1"><strong>From:</strong> ${message.senderName} (${message.senderEmail})</p>
+                                    <p class="mb-1 text-muted">${message.content.substring(0, 100)}${message.content.length > 100 ? '...' : ''}</p>
+                                    <small class="text-muted">${window.messageSystem.formatTimestamp(message.timestamp)}</small>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    ${statusBadge}
+                                    ${priorityClass}
+                                    <br><br>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); viewMessage('${message.id}')">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = messagesHtml;
+        }
+
+        // Get priority class from subject
+        function getPriorityClass(subject) {
+            if (subject.includes('[HIGH]')) {
+                return '<span class="badge bg-danger ms-2">High Priority</span>';
+            } else if (subject.includes('[MEDIUM]')) {
+                return '<span class="badge bg-warning ms-2">Medium Priority</span>';
+            } else {
+                return '<span class="badge bg-info ms-2">Low Priority</span>';
+            }
+        }
+
+        // Get status badge
+        function getStatusBadge(status) {
+            switch(status) {
+                case 'unread':
+                    return '<span class="badge bg-danger">Unread</span>';
+                case 'read':
+                    return '<span class="badge bg-secondary">Read</span>';
+                case 'replied':
+                    return '<span class="badge bg-success">Replied</span>';
+                default:
+                    return '<span class="badge bg-secondary">Unknown</span>';
+            }
+        }
+
+        // View message details
+        function viewMessage(messageId) {
+            const messages = window.messageSystem.getAdminMessages();
+            const message = messages.find(msg => msg.id === messageId);
+            
+            if (!message) {
+                window.auth.flashMessage('Message not found', 'error');
+                return;
+            }
+            
+            currentMessage = message;
+            
+            // Mark as read if it's unread
+            if (message.status === 'unread') {
+                window.messageSystem.markAsRead(messageId);
+                loadMessages(); // Refresh the message list
+            }
+            
+            const modalBody = document.getElementById('messageModalBody');
+            
+            let detailsHtml = `
+                <div class="mb-3">
+                    <h6>Message Information</h6>
+                    <p><strong>From:</strong> ${message.senderName}</p>
+                    <p><strong>Email:</strong> ${message.senderEmail}</p>
+                    <p><strong>Subject:</strong> ${message.subject}</p>
+                    <p><strong>Time:</strong> ${new Date(message.timestamp).toLocaleString()}</p>
+                    <p><strong>Status:</strong> ${getStatusBadge(message.status)}</p>
+                </div>
+                <div class="mb-3">
+                    <h6>Message Content</h6>
+                    <div class="border p-3 rounded">
+                        <p>${message.content}</p>
+                    </div>
+                </div>
+            `;
+            
+            modalBody.innerHTML = detailsHtml;
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('messageModal'));
+            modal.show();
+        }
+
+        // Show reply form
+        function showReplyForm() {
+            if (!currentMessage) return;
+            
+            // Set reply subject
+            document.getElementById('replySubject').value = 'Re: ' + currentMessage.subject;
+            document.getElementById('replyContent').value = '';
+            
+            // Close message modal and show reply modal
+            const messageModal = bootstrap.Modal.getInstance(document.getElementById('messageModal'));
+            messageModal.hide();
+            
+            setTimeout(() => {
+                const replyModal = new bootstrap.Modal(document.getElementById('replyModal'));
+                replyModal.show();
+            }, 300);
+        }
+
+        // Send reply
+        function sendReply() {
+            if (!currentMessage) return;
+            
+            const subject = document.getElementById('replySubject').value;
+            const content = document.getElementById('replyContent').value;
+            
+            if (!subject || !content) {
+                window.auth.flashMessage('Please fill in all fields', 'error');
+                return;
+            }
+            
+            // Get user ID from the original message (extract from sender info)
+            const recipientId = currentMessage.senderId;
+            
+            // Send reply
+            const replyData = {
+                senderId: 'admin',
+                recipientId: recipientId,
+                subject: subject,
+                content: content,
+                replyTo: currentMessage.id
+            };
+            
+            const reply = window.messageSystem.sendReply(replyData);
+            
+            // Close modal and refresh
+            const replyModal = bootstrap.Modal.getInstance(document.getElementById('replyModal'));
+            replyModal.hide();
+            
+            // Clear current message
+            currentMessage = null;
+            
+            // Refresh messages
+            loadMessages();
+            
+            // Update message notifications
+            if (window.auth && typeof window.auth.updateMessageNotifications === 'function') {
+                window.auth.updateMessageNotifications();
+            }
+            
+            window.auth.flashMessage('Reply sent successfully!', 'success');
+        }
+
+        // Refresh messages
+        function refreshMessages() {
+            loadMessages();
+            window.auth.flashMessage('Messages refreshed', 'info');
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check admin authentication
+            if (!window.auth.requireAdmin()) {
+                return;
+            }
+            
+            // Update UI
+            window.auth.updateAuthUI();
+            document.getElementById('usernameDisplay').textContent = window.auth.getCurrentUser().username;
+            
+            // Load messages
+            loadMessages();
+        });
+    </script>
+</body>
+</html>
